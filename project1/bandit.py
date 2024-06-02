@@ -50,6 +50,7 @@ class Bandit:
 
         self.epsilon = epsilon
         rewards = []
+        optimal_actions = np.zeros(steps)
         optimal_action_count = 0
         self.set_q_estimate(init_q_estimate_type)
         self.alpha= alpha
@@ -62,7 +63,7 @@ class Bandit:
             reward = self.step(action) #todo
             # print(f"reward {str(reward)} got")
             if action == optimal_action:
-                optimal_action_count += 1
+                optimal_actions[i]=1
             ##not good design 
             if action_selection_type == "gradient":
                 avg_reward += (reward - avg_reward) / (i + 1)
@@ -70,10 +71,11 @@ class Bandit:
             else:
                 self.update_estimate(action, reward)
             rewards.append(reward)
+            
 
-        optimal_action_percentage = optimal_action_count / steps
+        # optimal_action_percentage = optimal_action_count / steps
         # self.plot_distributions()
-        return rewards,optimal_action_percentage
+        return rewards,optimal_actions
             
 
     
@@ -155,21 +157,21 @@ def main():
 
     for i in range(num_problems):
         bandit = Bandit()
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="greedy")
+        rewards, optimal_actions = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="greedy")
         avg_rewards_greedy += rewards
-        optimal_action_percentage_greedy += optimal_action_percentage
+        optimal_action_percentage_greedy += optimal_actions
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="epsilon_greedy", epsilon=epsilon)
+        rewards, optimal_actions = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="epsilon_greedy", epsilon=epsilon)
         avg_rewards_epsilon_greedy += rewards
-        optimal_action_percentage_epsilon_greedy += optimal_action_percentage
+        optimal_action_percentage_epsilon_greedy += optimal_actions
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="optimistic", action_selection_type="greedy")
+        rewards, optimal_actions = bandit.run(steps=steps, init_q_estimate_type="optimistic", action_selection_type="greedy")
         avg_rewards_optimistic += rewards
-        optimal_action_percentage_optimistic += optimal_action_percentage
+        optimal_action_percentage_optimistic += optimal_actions
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="gradient", epsilon=epsilon)
+        rewards, optimal_actions = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="gradient", epsilon=epsilon)
         avg_rewards_gradient += rewards
-        optimal_action_percentage_gradient += optimal_action_percentage
+        optimal_action_percentage_gradient += optimal_actions
 
     avg_rewards_greedy /= num_problems
     avg_rewards_epsilon_greedy /= num_problems
