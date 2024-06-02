@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 import argparse
+import random
 SAVE_DIR = ".\\results\\"
 
 class Bandit:
@@ -139,6 +140,16 @@ class Bandit:
             self.action_values = (self.action_values* kapa) +  curr_epsilon
         else: 
             raise TypeError(f"No type: {type} found, please use drift or revert")
+
+
+    def abrupt_change(self):
+        permute_chance = 0.005
+        for i in range(self.action_values):
+            p = np.random.rand()
+            if p<= permute_chance:
+                index = random.choice(len(self.action_values))
+                self.action_values[i],self.action_values[index]= self.action_values[index],self.action_values[i]
+        
 
 
                 
