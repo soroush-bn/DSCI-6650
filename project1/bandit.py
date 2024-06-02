@@ -129,6 +129,18 @@ class Bandit:
         plt.legend()
         plt.show()
 
+
+    def gradual_change(self,type = "drift"): #types : drift, revert
+        curr_epsilon = np.random.normal(0, 0.001**2)
+        kapa = 0.5
+        if type=="drift":
+            self.action_values += curr_epsilon 
+        elif type=="revert":
+            self.action_values = (self.action_values* kapa) +  curr_epsilon
+        else: 
+            raise TypeError(f"No type: {type} found, please use drift or revert")
+
+
                 
 
 def main():
