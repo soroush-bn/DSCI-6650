@@ -88,7 +88,8 @@ class Bandit:
         elif type=="random" : 
             self.q_estimates = np.random.normal(0, 1, self.k)
         elif type=="optimistic":
-            self.q_estimates = np.ones_like(self.action_values)
+            max_q = self.action_values.max()
+            self.q_estimates = np.ones(shape=self.q_estimates.shape)*max_q +1
         else:
             raise NameError(f"type: {type} not found")
     
@@ -105,10 +106,10 @@ class Bandit:
 
     def pilot_run(self):
         alphas = [0.1,0.3,0.5,0.7,1]
-        epsilons = [0.1,0.3,0.5,0.7,1]
+        epsilons = [0.01,0.1,0.2,0.3]
         num_problems = 1
         steps = 1000
-        num_problems =100
+        num_problems =10000
         avg_rewards_epsilon_greedy = np.zeros(steps)
         plt.figure(figsize=(10, 6))
         average_over_alphas = np.zeros(len(alphas))
@@ -132,7 +133,7 @@ class Bandit:
 
 def main():
     parser = argparse.ArgumentParser(description="Simulate multi-armed bandit problem.")
-    parser.add_argument('--num_problems', type=int, default=100, help='Number of problems to run')
+    parser.add_argument('--num_problems', type=int, default=1000, help='Number of problems to run')
     parser.add_argument('--steps', type=int, default=1000, help='Number of steps for each problem')
     parser.add_argument('--epsilon', type=float, default=0.1, help='Epsilon value for epsilon-greedy strategy')
     parser.add_argument('--alpha', type=float, default=0.1, help='Learning rate for gradient bandit strategy')
@@ -193,7 +194,7 @@ def main():
     plt.title('Average Reward vs. Steps for Different Bandit Strategies')
     plt.legend()
     if(args.save):
-        plt.savefig("avg_reward.png")
+        plt.savefig("avg_reward1k.png")
     plt.show()
 
 
@@ -208,7 +209,7 @@ def main():
     plt.title('Optimal Action Percentage vs. Steps for Different Bandit Strategies')
     plt.legend()
     if(args.save):
-        plt.savefig("optimal_action.png")
+        plt.savefig("optimal_action1k.png")
     plt.show()
 
 
