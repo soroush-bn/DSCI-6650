@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-
-SAVE_DIR = ".\results"
+import argparse
+SAVE_DIR = ".\\results\\"
 
 class Bandit:
     def __init__(self, k=10):
@@ -15,7 +15,7 @@ class Bandit:
 
     
 
-    def select_action(self,type="greedy",):
+    def select_action(self,type="greedy"):
         if type=="greedy":
             return np.argmax(self.q_estimates)  # Choose action with highest estimated value
         elif type=="epsilon_greedy":
@@ -44,14 +44,14 @@ class Bandit:
         reward = self.get_reward(action)
         return reward
     
-    def run(self,steps=1000,init_action_value_type= "zero",action_selection_type= "greedy",epsilon=0.1,alpha=0.3):
+    def run(self,steps=1000,init_q_estimate_type= "zero",action_selection_type= "greedy",epsilon=0.1,alpha=0.3):
         # print(""*10)
         # print(self.action_values)
 
-
+        self.epsilon = epsilon
         rewards = []
         optimal_action_count = 0
-        # self.set_action_values(init_action_value_type)
+        self.set_q_estimate(init_q_estimate_type)
         self.alpha= alpha
         avg_reward = 0
         optimal_action = np.argmax(self.action_values)
@@ -80,14 +80,15 @@ class Bandit:
     def get_reward(self, action):
         return np.random.normal(self.action_values[action], 1)
 
-    def set_action_values(self,type="zero"): # type can be zero, optimistic and random
-        if type=="default": return
+    def set_q_estimate(self,type="zero"): # type can be zero, optimistic and random
         if type=="zero":
-            self.action_values = np.zeros(shape=self.action_values.shape)
+            self.q_estimates = np.zeros(shape=self.q_estimates.shape)
         elif type=="random" : 
-            self.action_values = np.random.normal(0, 1, self.k)
-        # elif type=="optimistic":
-        #     self.action_values = np.ones(shape = self.action_values.shape)*2
+            self.q_estimates = np.random.normal(0, 1, self.k)
+        elif type=="optimistic":
+            self.q_estimates = np.ones_like(self.action_values)
+        else:
+            raise NameError(f"type: {type} not found")
     
 
     def plot_distributions(self):
@@ -105,17 +106,17 @@ class Bandit:
         epsilons = [0.1,0.3,0.5,0.7,1]
         num_problems = 1
         steps = 1000
-        num_problems =1000 
-        avg_rewards_epsilon_greedy = np.zeros((len(epsilons),steps))
+        num_problems =100
+        avg_rewards_epsilon_greedy = np.zeros(steps)
         plt.figure(figsize=(10, 6))
         average_over_alphas = np.zeros(len(alphas))
         for i in range(len(epsilons)):
             # self.plot_distributions()
             for _ in range(num_problems):
-                rewards, _ = self.run(steps=steps, init_action_value_type="default", action_selection_type="greedy", epsilon=epsilons[i])
-                print(len(rewards))
-                avg_rewards_epsilon_greedy[i] += rewards
-                plt.plot(avg_rewards_epsilon_greedy[i],label=epsilons[i])
+                rewards, _ = self.run(steps=steps, init_q_estimate_type="zero", action_selection_type="epsilon_greedy", epsilon=epsilons[i])
+                
+                avg_rewards_epsilon_greedy += rewards
+            plt.plot(avg_rewards_epsilon_greedy/num_problems,label=epsilons[i])
 
         
 
@@ -128,8 +129,19 @@ class Bandit:
                 
 
 def main():
-    num_problems = 1000
-    steps = 1000
+    parser = argparse.ArgumentParser(description="Simulate multi-armed bandit problem.")
+    parser.add_argument('--num_problems', type=int, default=100, help='Number of problems to run')
+    parser.add_argument('--steps', type=int, default=1000, help='Number of steps for each problem')
+    parser.add_argument('--epsilon', type=float, default=0.1, help='Epsilon value for epsilon-greedy strategy')
+    parser.add_argument('--alpha', type=float, default=0.1, help='Learning rate for gradient bandit strategy')
+    parser.add_argument('--save', type=bool, default=False ,help='Save plots in SAVE_DIR PATH' )
+    
+    args = parser.parse_args()
+
+    num_problems = args.num_problems
+    steps = args.steps
+    epsilon = args.epsilon
+    alpha = args.alpha
 
     avg_rewards_greedy = np.zeros(steps)
     avg_rewards_epsilon_greedy = np.zeros(steps)
@@ -141,24 +153,21 @@ def main():
     optimal_action_percentage_optimistic = np.zeros(steps)
     optimal_action_percentage_gradient = np.zeros(steps)
 
-    epsilon = 0.1  # Example epsilon value; you can run pilot tests to determine the best value
-    alpha = 0.1    # Learning rate for the gradient bandit algorithm
-
     for i in range(num_problems):
         bandit = Bandit()
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_action_value_type="zero", action_selection_type="greedy")
+        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="greedy")
         avg_rewards_greedy += rewards
         optimal_action_percentage_greedy += optimal_action_percentage
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_action_value_type="zero", action_selection_type="epsilon_greedy", epsilon=epsilon)
+        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="epsilon_greedy", epsilon=epsilon)
         avg_rewards_epsilon_greedy += rewards
         optimal_action_percentage_epsilon_greedy += optimal_action_percentage
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_action_value_type="optimistic", action_selection_type="greedy")
+        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="optimistic", action_selection_type="greedy")
         avg_rewards_optimistic += rewards
         optimal_action_percentage_optimistic += optimal_action_percentage
 
-        rewards, optimal_action_percentage = bandit.run(steps=steps, init_action_value_type="zero", action_selection_type="gradient", epsilon=epsilon)
+        rewards, optimal_action_percentage = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="gradient", epsilon=epsilon)
         avg_rewards_gradient += rewards
         optimal_action_percentage_gradient += optimal_action_percentage
 
@@ -181,7 +190,11 @@ def main():
     plt.ylabel('Average Reward')
     plt.title('Average Reward vs. Steps for Different Bandit Strategies')
     plt.legend()
+    if(args.save):
+        plt.savefig("avg_reward.png")
     plt.show()
+
+
 
     plt.figure(figsize=(10, 6))
     plt.plot(optimal_action_percentage_greedy, label="Greedy")
@@ -192,7 +205,10 @@ def main():
     plt.ylabel('Optimal Action Percentage')
     plt.title('Optimal Action Percentage vs. Steps for Different Bandit Strategies')
     plt.legend()
+    if(args.save):
+        plt.savefig("optimal_action.png")
     plt.show()
+
 
 
 if __name__ == "__main__":
