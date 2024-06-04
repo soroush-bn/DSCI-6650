@@ -45,7 +45,7 @@ class Bandit:
         reward = self.get_reward(action)
         return reward
     
-    def run(self,steps=1000,init_q_estimate_type= "zero",action_selection_type= "greedy",epsilon=0.1,alpha=0.3,decreasing= False):
+    def run(self,steps=1000,init_q_estimate_type= "zero",action_selection_type= "greedy",epsilon=0.1,alpha=0.3,decreasing= False,non_stationary=None,gradual_type="drift"):
         # print(""*10)
         # print(self.action_values)
 
@@ -58,11 +58,15 @@ class Bandit:
         avg_reward = 0
         optimal_action = np.argmax(self.action_values)
         decay = self.epsilon /100
-        # print(optimal_action)
+
         for i in range(steps):
             if steps%100 == 0  and decreasing==True:
                 self.epsilon -= decay
-
+                # self.plot_distributions() #verify reward changes
+            if non_stationary=="abrupt":
+                self.abrupt_change()
+            elif non_stationary=="gradual":
+                self.gradual_change(type=gradual_type)
             action = self.select_action(type=action_selection_type)
             # print(f"action {str(action)} selected")
             reward = self.step(action) #todo
@@ -139,10 +143,10 @@ class Bandit:
         
         kapa = 0.5
         if type=="drift":
-            curr_epsilon = np.random.normal(0, 0.001**2)
+            curr_epsilon = np.random.normal(0, 0.001)
             self.action_values += curr_epsilon 
         elif type=="revert":
-            curr_epsilon = np.random.normal(0, 0.01**2)
+            curr_epsilon = np.random.normal(0, 0.01)
             self.action_values = (self.action_values* kapa) +  curr_epsilon
         else: 
             raise TypeError(f"No type: {type} found, please use drift or revert")
@@ -150,7 +154,7 @@ class Bandit:
 
     def abrupt_change(self):
         permute_chance = 0.005
-        for i in range(self.action_values):
+        for i in range(self.action_values): #todo should we swap all indicies ?
             p = np.random.rand()
             if p<= permute_chance:
                 i, j = np.random.choice(range(self.k), size=2, replace=False)

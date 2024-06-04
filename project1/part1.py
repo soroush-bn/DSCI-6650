@@ -29,7 +29,16 @@ def main():
     optimal_action_percentage_epsilon_greedy = np.zeros(steps)
     optimal_action_percentage_optimistic = np.zeros(steps)
     optimal_action_percentage_gradient = np.zeros(steps)
-
+    print("--"*10)
+    print(f"Part1: Starting bandit problem with following params: ")
+    print(f"number of steps:\t{steps}\n \
+              number of problems:\t{num_problems}\n \
+              epsilon:\t{epsilon}\n \
+              alpha:\t{alpha}\n
+              "
+              
+              )
+    print("--"*10)
     for i in range(num_problems):
         bandit = Bandit()
         rewards, optimal_actions = bandit.run(steps=steps, init_q_estimate_type="zero", action_selection_type="greedy")
