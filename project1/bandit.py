@@ -154,10 +154,14 @@ class Bandit:
 
     def abrupt_change(self):
         permute_chance = 0.005
-        for i in range(len(self.action_values)): #todo should we swap all indicies ?
-            p = np.random.rand()
-            if p<= permute_chance:
-                i, j = np.random.choice(range(self.k), size=2, replace=False)
-                self.action_values[i],self.action_values[j]= self.action_values[j],self.action_values[i]
+        # for i in range(len(self.action_values)): #todo should we swap all indicies ?
+            # p = np.random.rand()
+            # if p<= permute_chance:
+                # i, j = np.random.choice(range(self.k), size=2, replace=False)
+                # self.action_values[i],self.action_values[j]= self.action_values[j],self.action_values[i]
+                
+        p = np.random.rand()
+        if p<= permute_chance:
+            np.random.permutation(self.action_values)
+            
 
-        
