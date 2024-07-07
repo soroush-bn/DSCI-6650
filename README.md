@@ -14,7 +14,7 @@ On Ubuntu, navigate to the project directory:
 ```bash
 cd /DSCI-6650/project1/
 ```
-Run the following command to reproduce results for Project 1:
+Run the following command to reproduce results for Part 1:
 ```bash
 python3 part1.py --steps 1000 --num_problems 1000 --save True
 
@@ -26,8 +26,9 @@ You can also customize alpha and epsilon values using the following options:
     --epsilon to specify the epsilon value
 
 
-Run the following command to reproduce results for Project 1:
+Run the following command to reproduce results for Part 2:
 ```bash
-python3 part2.py --steps 10000 --num_problems 1000 --save True
-
+python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary "gradual" --gradual_type "drift"
+python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary "gradual" --gradual_type "revert"
+python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary "abrupt"
 ```
