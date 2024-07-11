@@ -19,10 +19,10 @@ def main():
     print("--"*12)
 
     # grid =Grid()
-    # v = value_function_with_value_iteration(grid,gamma)
+    # v = policy_improvement_with_value_iteration(grid,gamma)
     # arr = np.array(v)
     # print("*" *12)
-    # print("Estimating V function with "  +str(value_function_with_value_iteration.__name__))
+    # print("Estimating V function with "  +str(policy_improvement_with_value_iteration.__name__))
     # print("max position = " + str(np.argmax(v)))
     # print("values: \n")
     # print(v)
@@ -70,14 +70,66 @@ def value_function_with_solving_bellman_eq(grid, discount_factor=0.95):
     V = np.linalg.solve(I - discount_factor * P, R)
     return V
 
+def arg_max_from_value_function(value_function,grid):
+    def max_action(up,down,left,right):
+        if up>= down and up >= left and up>=right : 
+            return "up"
+        elif down >=up and down>= right and down >= left : 
+            return "down"
+        elif right >= left and right >=down and right>= up:
+            return "right"
+        else:
+            return "left"
 
-def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, theta=1e-3):
+    policy = [[0]*grid.shape[1] for _ in range(grid.shape[0])]
+
+
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            up=down=right=left = -999
+
+            if i-1 >=0:
+                up = value_function[i-1][j] # up
+            if i+1 < grid.shape[0]:
+                down = value_function[i+1][j] # down
+            if j-1>=0:
+                left = value_function[i][j-1] # left
+            if j+1 < grid.shape[1]: 
+                right =  value_function[i][j+1] # right
+            
+            policy[i][j] =  max_action(up,down,left,right)
+
+    return policy
+
+
+def deterministic_policy_to_policy_probs(deterministic_policy,grid):
+
+    policy_prob = [[0]*grid.shape[0]]*grid.shape[1]
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            p = deterministic_policy[i][j]
+            policy_prob[i][j]= {"left":0,"right":0,"up":0,"down": 0}
+            policy_prob[i][j][p] = 1
+    return policy_prob
+
+def policy_prob_to_deterministic_policy(policy_prob, grid):
+    deterministic_policy = [[0]*grid.shape[1] for _ in range(grid.shape[0])]
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            deterministic_policy[i][j] = max(policy_prob[i][j], key=policy_prob[i][j].get)
+    return deterministic_policy
+
+
+def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, theta=1e-3,policy_prob=None):
     shape = grid.shape
     value_function = np.zeros(shape)
     model_transition_prob = 1 
-    
-    policy_prob = 0.25  # Equal probability for each action
-
+    if policy_prob==None:
+        policy_prob = [[0]*grid.shape[0]]*grid.shape[1]
+        for i in range(grid.shape[0]):
+            for j in range(grid.shape[1]):
+                policy_prob[i][j]= {"left":0.25,"right":0.25,"up":0.25,"down": 0.25}# Equal probability for each action
+                policy = arg_max_from_value_function(value_function,grid)
     while True:
         delta = 0
         # for state in states:
@@ -91,7 +143,7 @@ def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, 
                     #todo
                     grid.current_state=state # for starting from the same state
                     next_state, reward = grid.move(action) # we dont need P (transitions probabilities are all 1 execpt from special cells that you know for sure you are on that state)???
-                    new_value += policy_prob * (reward + discount_factor * value_function[next_state[0]][next_state[1]])
+                    new_value += policy_prob[i][j][action] * (reward + discount_factor * value_function[next_state[0]][next_state[1]])
                 value_function[i][j] = new_value
                 delta = max(delta, abs(v - new_value))
         if delta < theta:
@@ -99,10 +151,38 @@ def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, 
 
     return value_function
 
+def policy_iteration(grid,discount_factor = 0.95):
+    # init 
+    v = np.zeros(grid.shape)
+    policy_prob = [[0]*grid.shape[0]]*grid.shape[1]
+    policy = [["right"]*grid.shape[1] for _ in range(grid.shape[0])]
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            policy_prob[i][j]= {"left":0.25,"right":0.25,"up":0.25,"down": 0.25}# Equal probability for each action
 
+    ### does argmax means the policy(s) should only return one action at a time or it can also return a probability set ??
+    while True : 
+        #policy evaluation 
+        policy_prob = deterministic_policy_to_policy_probs(policy,grid)
+        value_function = value_function_with_iterative_policy_evaluation(grid,policy_prob=policy_prob)
+        # policy improvement 
+        policy_stable = True
+        for i in range(grid.shape[0]):
+            for j in range(grid.shape[1]):
+                old_action = max(policy_prob[i][j], key=policy_prob[i][j].get)
+                policy = arg_max_from_value_function(value_function,grid)
+                if old_action != max(policy_prob[i][j], key=policy_prob[i][j].get):
+                    policy_stable = False
+                if policy_stable : 
+                    return value_function,policy
     
 
-def value_function_with_value_iteration(grid, discount_factor=0.95, theta=1e-5):
+
+            
+
+
+
+def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e-5):
     shape = grid.shape
     value_function = np.zeros(shape)
     while True:
@@ -123,9 +203,9 @@ def value_function_with_value_iteration(grid, discount_factor=0.95, theta=1e-5):
         if delta < theta:
                 break
             
+    policy = arg_max_from_value_function(value_function,grid)
 
-
-    return value_function
+    return value_function,policy
 
 
                 
