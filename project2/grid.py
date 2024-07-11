@@ -17,6 +17,9 @@ class Grid:
 
     
     def move(self,action):
+        reward = self.check_special()
+        if reward!=0 :
+            return self.current_state, reward
 
         if action== "right":
             
@@ -24,7 +27,7 @@ class Grid:
                 return self.current_state, -0.5
             else:
                 self.current_state = (self.current_state[0],self.current_state[1]+1)
-                reward = self.check_special()
+                # reward = self.check_special()
                 return self.current_state,reward
         elif action== "left":
             
@@ -32,7 +35,7 @@ class Grid:
                 return self.current_state, -0.5
             else:
                 self.current_state = (self.current_state[0],self.current_state[1]-1)
-                reward = self.check_special()
+                # reward = self.check_special()
                 return self.current_state,reward
 
         elif action== "up":
@@ -41,7 +44,7 @@ class Grid:
                 return self.current_state, -0.5
             else:
                 self.current_state = (self.current_state[0]-1,self.current_state[1])
-                reward = self.check_special()
+                # reward = self.check_special()
                 return self.current_state,reward
             
         elif action== "down":
@@ -50,7 +53,7 @@ class Grid:
                 return self.current_state, -0.5
             else:
                 self.current_state = (self.current_state[0]+1,self.current_state[1])
-                reward = self.check_special()
+                # reward = self.check_special()
                 return self.current_state,reward
         else:
             raise Exception("unknown action")
@@ -67,7 +70,7 @@ class Grid:
             return 5
         #green
         elif self.current_state[0] == self.green_pos[0] and self.current_state[1]==self.green_pos[1]:
-            self.current_state = random.choice(self.red_pos,self.yellow_pos)
+            self.current_state = random.choice([self.red_pos,self.yellow_pos])
             return 2.5
         return 0
         
@@ -86,3 +89,4 @@ class Grid:
     def check_edge_down(self):
         if self.current_state[0]==self.shape[0]-1:
             return True
+        
