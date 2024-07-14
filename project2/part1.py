@@ -1,46 +1,81 @@
 from grid import Grid
-import random
 import numpy as np
-def random_policy(actions):
-    return random.choice(actions)
+import matplotlib.pyplot as plt
+import seaborn as sns
+from utils import *
 
-
+import argparse
 
 def main():
+    parser = argparse.ArgumentParser(description="Simulate multi-armed bandit problem.")
+    parser.add_argument('--theta', type=float, default=1e-3, help='theta threshold')
+    parser.add_argument('--gamma', type=float, default=0.95, help='discount factor')
+    parser.add_argument('--gui', action='store_true' )
+    parser.add_argument('-q1', '--question1', action='store_true')
+    parser.add_argument('-q2', '--question2', action='store_true')
+    args = parser.parse_args()
+    
     grid =Grid()
-    gamma = 0.95
-    v = value_function_with_solving_bellman_eq(grid,gamma)
-    arr = np.array(v)
-    print("*" *12)
-    print("Estimating V function with "  +str(value_function_with_solving_bellman_eq.__name__))
-    print("max position = " + str(np.argmax(v)))
-    print("values: \n")
-    print(v)
-    print("--"*12)
+    gamma = args.gamma
+    theta=args.theta
+    gui=args.gui
+    q1 =args.question1
+    q2= args.question2
 
-    # grid =Grid()
-    # v = policy_improvement_with_value_iteration(grid,gamma)
-    # arr = np.array(v)
-    # print("*" *12)
-    # print("Estimating V function with "  +str(policy_improvement_with_value_iteration.__name__))
-    # print("max position = " + str(np.argmax(v)))
-    # print("values: \n")
-    # print(v)
-    # print("--"*12)
+    if q1:
+
+        v_bellman_eq = value_function_with_solving_bellman_eq(grid,gamma)
+        print_details(v_bellman_eq,value_function_with_solving_bellman_eq.__name__,grid)
+        v_bellman_eq= np.array(v_bellman_eq)
+        v_bellman_eq=v_bellman_eq.reshape(grid.shape).tolist()
+        
+        grid =Grid()
+        v = value_function_with_iterative_policy_evaluation(grid,gamma)
+        # arr = np.array(v)
+        print_details(v,value_function_with_iterative_policy_evaluation.__name__,grid)
 
 
-    grid =Grid()
-    v = value_function_with_iterative_policy_evaluation(grid,gamma)
-    arr = np.array(v)
-    print("*" *12)
-    print("Estimating V function with "  +str(value_function_with_iterative_policy_evaluation.__name__))
-    print("max position = " + str(np.argmax(v)))
-    print("values: \n")
-    print(v)
-    print("--"*12)
+        if gui:
+            fig, axs = plt.subplots(1, 2, figsize=(16, 6))
+            sns.heatmap(v_bellman_eq, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[0])
+            axs[0].set_title("value of bellman eq")
+            axs[0].set_xlabel('Column')
+            axs[0].set_ylabel('Row')
+            sns.heatmap(v, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[1])
+            axs[1].set_title("value of policy evaluation")
+            axs[1].set_xlabel('Column')
+            axs[1].set_ylabel('Row')
+            plt.show()
 
-def get_all_states(shape):
-    return [(i, j) for i in range(shape[0]) for j in range(shape[1])]
+    if q2:
+
+
+        v_bellman_eq = value_function_with_solving_bellman_eq(grid,gamma)
+        print("*" *12)
+        print("optimal policy solving bellamn eq: \n")
+        v_bellman_eq= np.array(v_bellman_eq)
+        v_bellman_eq=v_bellman_eq.reshape(grid.shape).tolist()
+        p_bellman= arg_max_from_value_function(v_bellman_eq,grid)
+        pprint(p_bellman)
+        print("--"*10)
+
+        print("optimal policy with policy iteration: \n")
+        grid=Grid()
+        v,p_policy_iteration = policy_iteration(grid,discount_factor=0.95)
+        pprint(p_policy_iteration)
+        print("--"*10)
+
+        print("optimal policy with value iteration: \n")
+        grid=Grid()
+        v,p_value_iteration = policy_improvement_with_value_iteration(grid)
+        pprint(p_value_iteration)
+        print("--"*10)
+
+        if gui:
+            plot_three_policies(p_bellman,p_policy_iteration,p_value_iteration,"bellman eq","policy_iteration","value_iteration")
+
+
+
 
 def create_transition_and_reward_matrices(grid):
     shape = grid.shape
@@ -70,54 +105,7 @@ def value_function_with_solving_bellman_eq(grid, discount_factor=0.95):
     V = np.linalg.solve(I - discount_factor * P, R)
     return V
 
-def arg_max_from_value_function(value_function,grid):
-    def max_action(up,down,left,right):
-        if up>= down and up >= left and up>=right : 
-            return "up"
-        elif down >=up and down>= right and down >= left : 
-            return "down"
-        elif right >= left and right >=down and right>= up:
-            return "right"
-        else:
-            return "left"
 
-    policy = [[0]*grid.shape[1] for _ in range(grid.shape[0])]
-
-
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            up=down=right=left = -999
-
-            if i-1 >=0:
-                up = value_function[i-1][j] # up
-            if i+1 < grid.shape[0]:
-                down = value_function[i+1][j] # down
-            if j-1>=0:
-                left = value_function[i][j-1] # left
-            if j+1 < grid.shape[1]: 
-                right =  value_function[i][j+1] # right
-            
-            policy[i][j] =  max_action(up,down,left,right)
-
-    return policy
-
-
-def deterministic_policy_to_policy_probs(deterministic_policy,grid):
-
-    policy_prob = [[0]*grid.shape[0]]*grid.shape[1]
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            p = deterministic_policy[i][j]
-            policy_prob[i][j]= {"left":0,"right":0,"up":0,"down": 0}
-            policy_prob[i][j][p] = 1
-    return policy_prob
-
-def policy_prob_to_deterministic_policy(policy_prob, grid):
-    deterministic_policy = [[0]*grid.shape[1] for _ in range(grid.shape[0])]
-    for i in range(grid.shape[0]):
-        for j in range(grid.shape[1]):
-            deterministic_policy[i][j] = max(policy_prob[i][j], key=policy_prob[i][j].get)
-    return deterministic_policy
 
 
 def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, theta=1e-3,policy_prob=None):
@@ -182,13 +170,14 @@ def policy_iteration(grid,discount_factor = 0.95):
 
 
 
-def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e-5):
+def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e-3):
     shape = grid.shape
     value_function = np.zeros(shape)
     while True:
         delta = 0 
         for i in range(shape[0]):
             for j in range(shape[1]):
+                grid.current_state= (i,j)
                 v = value_function[i][j]
                 new_value = -9999
                 state = grid.current_state
