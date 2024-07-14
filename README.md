@@ -32,3 +32,21 @@ python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary 
 python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary "gradual" --gradual_type "revert"
 python3 part2.py --steps 10000 --num_problems 1000 --save True --non_stationary "abrupt"
 ```
+
+
+
+## Project Two:
+
+
+Reproducing Results:
+
+
+```bash
+cd /DSCI-6650/project2/
+```
+
+
+Part one, Question 1: 
+    ```bash
+python3 part2.py 
+```
