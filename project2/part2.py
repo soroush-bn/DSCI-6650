@@ -203,6 +203,17 @@ def main():
         if gui:
             plot_policies([optimal_policy_MC_ES,optimal_policy_MC_epsilon_soft],[MC_with_exploring_start.__name__,MC_epsilon_soft.__name__])
 
+    if q2 : 
+        grid= ModifiedGrid()
+        optimal_policy_MC_off ,Q_MC_off = MC_off_policy(grid,gamma,theta,n_episodes)
+
+        pprint(optimal_policy_MC_off)
+        pprint(Q_MC_off )
+
+        print("*"*10)
+        if gui:
+            plot_policies([optimal_policy_MC_off],[MC_off_policy.__name__])
+
 
 
 if __name__=="__main__":
