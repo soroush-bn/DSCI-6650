@@ -1,5 +1,5 @@
 from grid import Grid
-
+import random
 class ModifiedGrid(Grid):
 
     def __init__(self, shape=(5,5)) -> None:
@@ -23,5 +23,7 @@ class ModifiedGrid(Grid):
 
 
     def permute(self):
-        pass
+        if random.random() < 0.1 : 
+            self.red_pos,self.blue_pos =self.blue_pos,self.red_pos
+    
     
