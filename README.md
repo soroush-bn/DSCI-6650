@@ -47,6 +47,26 @@ cd /DSCI-6650/project2/
 
 
 Part one, Question 1: 
-    ```bash
-python3 part2.py 
+```bash
+python3 part1.py -q1 --gui  
+```
+
+Part one, Question 2: 
+```bash
+python3 part1.py -q2 --gui  
+```
+
+Part two, Question 1: 
+```bash
+python3 part2.py -q1 --gui  
+```
+
+Part two, Question 2: 
+```bash
+python3 part2.py -q2 --gui  
+```
+
+Part two, Question 3: 
+```bash
+python3 part2.py -q3 --gui  
 ```
