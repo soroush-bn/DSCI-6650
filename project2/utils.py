@@ -15,6 +15,7 @@ def print_details(value_function,title,grid):
 def plot_policies(policy_grids, titles=None):
     num_policies = len(policy_grids)
     fig, axs = plt.subplots(1, num_policies, figsize=(8 * num_policies, 8))
+    if len(policy_grids)==1 : axs = [axs]
     if titles is None:
         titles = [f'Policy {i+1}' for i in range(num_policies)]
     
