@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt 
 import random
+import seaborn as sns
 
 def print_details(value_function,title,grid):
         
@@ -11,8 +12,16 @@ def print_details(value_function,title,grid):
         pprint(value_function.reshape(grid.shape).tolist())
         print("--"*12)
 
+def plot_values(values,titles ):
+    fig, axs = plt.subplots(1, len(values), figsize=(16, 6))
+    for i in range(len(values)):
+        sns.heatmap(values[i], annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[i])
+        axs[i].set_title(titles[i])
+        axs[i].set_xlabel('Column')
+        axs[i].set_ylabel('Row')
+    plt.show()
 
-def plot_policies(policy_grids, titles=None):
+def plot_policies(policy_grids, titles=None,grid=None):
     num_policies = len(policy_grids)
     fig, axs = plt.subplots(1, num_policies, figsize=(8 * num_policies, 8))
     if len(policy_grids)==1 : axs = [axs]
@@ -21,9 +30,9 @@ def plot_policies(policy_grids, titles=None):
     
     orientation_mapper = {"right": "→", "down": "↓", "up": "↑", "left": "←"}
 
-    def plot_policy(ax, policy_grid, title):
+    def plot_policy(ax, policy_grid, title,colors):
         n, m = len(policy_grid), len(policy_grid[0])
-        colors = {(0,1): "blue", (0, 4): "green" , (4,4):"yellow", (4,2):"red",(4,0):"black",(2,4):"black"}
+        colors = colors
 
         for i in range(n):
             for j in range(m):
@@ -41,41 +50,9 @@ def plot_policies(policy_grids, titles=None):
         ax.invert_yaxis()
     
     for i in range(num_policies):
-        plot_policy(axs[i], policy_grids[i], titles[i])
+        plot_policy(axs[i], policy_grids[i], titles[i],grid.color_map)
     
     plt.show()
-
-
-
-def plot_three_policies(policy_grid1, policy_grid2, policy_grid3, title1='Policy 1', title2='Policy 2', title3='Policy 3'):
-    fig, axs = plt.subplots(1, 3, figsize=(24, 8))
-    
-    orientation_mapper = {"right":"→" , "down":"↓" , "up":"↑" , "left":"←" }
-
-    def plot_policy(ax, policy_grid, title):
-        n, m = len(policy_grid), len(policy_grid[0])
-        for i in range(n):
-            for j in range(m):
-                ax.text(j, i, orientation_mapper[policy_grid[i][j]], ha='center', va='center', fontsize=12)
-        ax.set_xlim(-0.5, m-0.5)
-        ax.set_ylim(-0.5, n-0.5)
-        ax.set_xticks(np.arange(-0.5, m, 1))
-        ax.set_yticks(np.arange(-0.5, n, 1))
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        ax.grid(True)
-        ax.set_title(title)
-        ax.invert_yaxis()
-    
-    plot_policy(axs[0], policy_grid1, title1)
-    plot_policy(axs[1], policy_grid2, title2)
-    plot_policy(axs[2], policy_grid3, title3)
-    
-    plt.show()
-
-
-
-
 
 
 def random_policy(actions):

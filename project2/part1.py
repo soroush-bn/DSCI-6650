@@ -1,7 +1,6 @@
 from grid import Grid
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from utils import *
 
 import argparse
@@ -13,6 +12,8 @@ def main():
     parser.add_argument('--gui', action='store_true' )
     parser.add_argument('-q1', '--question1', action='store_true')
     parser.add_argument('-q2', '--question2', action='store_true')
+    parser.add_argument('-t', '--tune', action='store_true')
+
     args = parser.parse_args()
     
     grid =Grid()
@@ -21,31 +22,35 @@ def main():
     gui=args.gui
     q1 =args.question1
     q2= args.question2
+    tune = args.tune
 
     if q1:
-
         v_bellman_eq = value_function_with_solving_bellman_eq(grid,gamma)
         print_details(v_bellman_eq,value_function_with_solving_bellman_eq.__name__,grid)
         v_bellman_eq= np.array(v_bellman_eq)
         v_bellman_eq=v_bellman_eq.reshape(grid.shape).tolist()
         
         grid =Grid()
-        v = value_function_with_iterative_policy_evaluation(grid,gamma)
+        v_policy_evaluation = value_function_with_iterative_policy_evaluation(grid,gamma)
         # arr = np.array(v)
-        print_details(v,value_function_with_iterative_policy_evaluation.__name__,grid)
-
+        print_details(v_policy_evaluation,value_function_with_iterative_policy_evaluation.__name__,grid)
 
         if gui:
-            fig, axs = plt.subplots(1, 2, figsize=(16, 6))
-            sns.heatmap(v_bellman_eq, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[0])
-            axs[0].set_title("values of bellman eq")
-            axs[0].set_xlabel('Column')
-            axs[0].set_ylabel('Row')
-            sns.heatmap(v, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[1])
-            axs[1].set_title("values of policy evaluation")
-            axs[1].set_xlabel('Column')
-            axs[1].set_ylabel('Row')
-            plt.show()
+            plot_values([v_bellman_eq,v_policy_evaluation],["values of bellman eq","values of policy evaluation"])
+
+        if tune : 
+            discount_factors = [0.95,0.75,0.50,0]
+            v_bellmans = []
+            v_policy_evals =[]
+            for df in discount_factors:
+                v_bellman_eq = value_function_with_solving_bellman_eq(grid,df)
+                v_policy_evaluation = value_function_with_iterative_policy_evaluation(grid,df)
+                v_bellmans.append(v_bellman_eq)
+                v_policy_evals.append(v_policy_evaluation)
+
+
+            plot_values(v_policy_evals,["gamma=0.95","gamma=0.70","gamma=0.50","gamma=0"])
+
 
     if q2:
 
@@ -61,32 +66,38 @@ def main():
 
         print("optimal policy with policy iteration: \n")
         grid=Grid()
-        v_policy_iteration,p_policy_iteration = policy_iteration(grid,discount_factor=0.95)
+        v_policy_iteration,p_policy_iteration,_ = policy_iteration(grid,discount_factor=0.95)
         pprint(p_policy_iteration)
         print("--"*10)
 
         print("optimal policy with value iteration: \n")
         grid=Grid()
-        v_value_iteration,p_value_iteration = policy_improvement_with_value_iteration(grid)
+        v_value_iteration,p_value_iteration,_ = policy_improvement_with_value_iteration(grid)
         pprint(p_value_iteration)
         print("--"*10)
 
         if gui:
-            fig, axs = plt.subplots(1, 3, figsize=(16, 6))
-            sns.heatmap(v_bellman_eq, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[0])
-            axs[0].set_title("values of bellman eq")
-            axs[0].set_xlabel('Column')
-            axs[0].set_ylabel('Row')
-            sns.heatmap(v_policy_iteration, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[1])
-            axs[1].set_title("values of policy iteration")
-            axs[1].set_xlabel('Column')
-            axs[1].set_ylabel('Row')
-            sns.heatmap(v_value_iteration, annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[2])
-            axs[2].set_title("values of value iteration")
-            axs[2].set_xlabel('Column')
-            axs[2].set_ylabel('Row')
-            plt.show()
-            plot_policies([p_bellman,p_policy_iteration,p_value_iteration],["bellman eq","policy_iteration","value_iteration"])
+            
+            plot_policies([p_bellman,p_policy_iteration,p_value_iteration],["bellman eq","policy_iteration","value_iteration"],grid)
+
+        if tune: 
+            discount_factors = [0.95,0.70,0.50,0]
+            avg_rewards_over_dfs_policy_iteration = []
+            avg_rewards_over_dfs_value_iteration = [] 
+            
+            for df in discount_factors : 
+                grid=Grid()
+                v_policy_iteration,p_policy_iteration,avg_rewards_policy_iteration = policy_iteration(grid,discount_factor=df,playing=True)
+                
+                grid=Grid()
+                v_value_iteration,p_value_iteration, avg_rewards_value_iteration = policy_improvement_with_value_iteration(grid,discount_factor=df,playing=True)
+
+                avg_rewards_over_dfs_value_iteration.append(play(p_value_iteration))
+                avg_rewards_over_dfs_policy_iteration.append(play(p_policy_iteration))
+
+            print(avg_rewards_over_dfs_value_iteration)
+            print(avg_rewards_over_dfs_policy_iteration)
+            
 
 
 
@@ -152,7 +163,7 @@ def value_function_with_iterative_policy_evaluation(grid, discount_factor=0.95, 
 
     return value_function
 
-def policy_iteration(grid,discount_factor = 0.95):
+def policy_iteration(grid,discount_factor = 0.95,playing=False):
     # init 
     v = np.zeros(grid.shape)
     policy_prob = [[0]*grid.shape[0]]*grid.shape[1]
@@ -161,9 +172,11 @@ def policy_iteration(grid,discount_factor = 0.95):
         for j in range(grid.shape[1]):
             policy_prob[i][j]= {"left":0.25,"right":0.25,"up":0.25,"down": 0.25}# Equal probability for each action
 
+    avg_rewards = [] 
     ### does argmax means the policy(s) should only return one action at a time or it can also return a probability set ??
     while True : 
         #policy evaluation 
+        if playing: avg_rewards.append(play(policy))
         policy_prob = deterministic_policy_to_policy_probs(policy,grid)
         value_function = value_function_with_iterative_policy_evaluation(grid,policy_prob=policy_prob)
         # policy improvement 
@@ -175,7 +188,7 @@ def policy_iteration(grid,discount_factor = 0.95):
                 if old_action != max(policy_prob[i][j], key=policy_prob[i][j].get):
                     policy_stable = False
                 if policy_stable : 
-                    return value_function,policy
+                    return value_function,policy,avg_rewards
     
 
 
@@ -183,9 +196,10 @@ def policy_iteration(grid,discount_factor = 0.95):
 
 
 
-def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e-3):
+def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e-3,playing=False):
     shape = grid.shape
     value_function = np.zeros(shape)
+    avg_rewards = [] 
     while True:
         delta = 0 
         for i in range(shape[0]):
@@ -200,17 +214,37 @@ def policy_improvement_with_value_iteration(grid, discount_factor=0.95, theta=1e
                     new_value = max(new_value,(reward + discount_factor * value_function[next_state[0]][next_state[1]]) )
                 delta = max(delta, abs(v - new_value))
                 value_function[state] = new_value
+
             if delta < theta:
                 break
+        if playing:
+            policy = arg_max_from_value_function(value_function,grid)
+            avg_rewards.append(play(policy))
         if delta < theta:
                 break
-            
     policy = arg_max_from_value_function(value_function,grid)
 
-    return value_function,policy
+    return value_function,policy,avg_rewards
 
 
                 
+
+def play(policy,n =100,steps=100):
+
+    rewards = []
+    
+    for i in range(n):
+        grid= Grid()
+        terminal= False
+        reward = 0 
+        for _ in range(steps): 
+            state = grid.current_state
+            action = policy[state[0]][state[1]]
+            next_state, r = grid.move(action)
+            reward += r
+        rewards.append(reward)
+
+    return sum(rewards)/n
 
 
 

@@ -14,7 +14,7 @@ class Grid:
         self.green_pos = (0,4)
         self.red_pos = (3,2)
         self.yellow_pos = (4,4)
-
+        self.color_map = {self.blue_pos: "blue", self.green_pos: "green" ,self.yellow_pos:"yellow", self.red_pos:"red"}
     
     def move(self,action):
         reward = self.check_special()
