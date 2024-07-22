@@ -66,6 +66,8 @@ Part two, Question 2:
 python3 part2.py -q2 --gui  
 ```
 
+
+if you want add params tuning you can add --tune flag (if applicable to that question), for changing the params under tuning, please refeer to code
 Part two, Question 3: 
 ```bash
 python3 part2.py -q3 --gui  
