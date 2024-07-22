@@ -26,7 +26,7 @@ class ModifiedGrid(Grid):
 
 
     def permute(self):
-        if random.random() < 0.1 : 
-            self.red_pos,self.blue_pos =self.blue_pos,self.red_pos
+        if random.random() < 0.3 : 
+            self.green_pos,self.blue_pos =self.blue_pos,self.green_pos
     
     
