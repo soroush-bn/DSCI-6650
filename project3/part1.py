@@ -31,6 +31,10 @@ def sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
         
         return Q
     
+
+
+
+    
     
              
 
@@ -44,6 +48,29 @@ def sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
 
 
 # todo Q Learning
+def Qlearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
+    # policy_prob = [[{"left": 0.25, "right": 0.25, "up": 0.25, "down": 0.25} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    # policy = [["right" for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+
+    Q = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    # rewards = []
+
+    for i in n_episodes:
+        terminal = False
+        S = grid.current_state
+
+        while not terminal: #or replace with steps ?
+            action_probs = epsilon_greedy_policy(S,Q,epsilon)
+            A = random.choice(grid.action_set,p = action_probs)
+            # action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
+            # A_prime = random.choice(grid.action_set,p = action_probs)
+            S_prime,R,terminal = grid.move(A)
+            Q[S][A] = Q[S][A] + alpha(R + discount* max(Q[S_prime]) - Q[S][A])
+            S = S_prime
+            # A = A_prime
+        
+        return Q
 
 # todo expected sarsa
 
