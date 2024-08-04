@@ -2,6 +2,7 @@ import argparse
 from grid import Grid
 import numpy as np
 import random
+from utils import *
 def epsilon_greedy_policy(state, Q, epsilon, n_actions=4):
     action_probs = np.ones(n_actions) * (epsilon / n_actions)
     action_map = {'left': 0, 'right':1,'up':2,'down':3}
@@ -70,7 +71,7 @@ def Qlearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
 
-    for i in n_episodes:
+    for i in range(n_episodes):
         terminal = False
         S = grid.current_state
         if i% 1000 ==0 :
@@ -85,7 +86,7 @@ def Qlearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95
             # action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
             # A_prime = random.choice(grid.action_set,p = action_probs)
             S_prime,R,terminal = grid.move(A)
-            Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha(R + discount* max(Q[S_prime[0]][S_prime[1]]) - Q[S[0]][S[1]][A])
+            Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* max(Q[S_prime[0]][S_prime[1]].values()) - Q[S[0]][S[1]][A])
             S = S_prime
             # A = A_prime
         
@@ -100,7 +101,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
 
-    for i in n_episodes:
+    for i in range(n_episodes):
         if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         terminal = False
@@ -118,7 +119,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             expected_target = 0 
             for a in grid.action_set:
                 expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[S[1]]][a]
-            Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha(R + discount* expected_target  - Q[S[0]][S[1]][A])
+            Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* expected_target  - Q[S[0]][S[1]][A])
             S = S_prime
             A = A_prime
         
@@ -135,7 +136,7 @@ def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
 
-    for i in n_episodes:
+    for i in range(n_episodes):
         if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         terminal = False
@@ -150,9 +151,9 @@ def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             S_prime,R,terminal = grid.move(A)
             if np.random.binomial(1, 0.5, 1)==0:
                 
-                Q1[S[0]][S[1]][A] = Q1[S[0]][S[1]][A] + alpha(R + discount* max(Q2[S_prime[0]][S_prime[1]]) - Q1[S[0]][S[1]][A])
+                Q1[S[0]][S[1]][A] = Q1[S[0]][S[1]][A] + alpha*(R + discount* max(Q2[S_prime[0]][S_prime[1]].values()) - Q1[S[0]][S[1]][A])
             else:
-                Q2[S[0]][S[1]][A] = Q2[S[0]][S[1]][A] + alpha(R + discount* max(Q1[S_prime[0]][S_prime[1]]) - Q2[S[0]][S[1]][A])
+                Q2[S[0]][S[1]][A] = Q2[S[0]][S[1]][A] + alpha*(R + discount* max(Q1[S_prime[0]][S_prime[1]].values()) - Q2[S[0]][S[1]][A])
 
             S = S_prime
             # A = A_prime
@@ -175,10 +176,27 @@ def main():
     epsilon = args.epsilon
     n_episodes = args.episodes
 
+
+    ##Sarsa
     grid = Grid()
     Q_sarsa = sarsa(grid)
     print("finished: final q: ")
     print(Q_sarsa)
+    # plot_state_values(Q_sarsa)
+    # plot_policy(grid,Q_sarsa)
+
+
+    ## Q learning
+    grid = Grid()
+    Q_Qlearning = Qlearning(grid)
+    print("finished: final q: ")
+    print(Q_Qlearning)
+    # plot_state_values(Q_sarsa)
+    # plot_policy(grid,Q_Qlearning)
+
+
+    plot_policies_grid(grid,[Q_sarsa,Q_Qlearning],["SARSA","QLEARNING"])
+
 
 if __name__=="__main__":
     main()
