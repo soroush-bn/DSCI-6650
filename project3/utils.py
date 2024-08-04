@@ -147,3 +147,45 @@ def plot_policies_grid(grid,q_values_list, titles_list):
     
     plt.tight_layout()
     plt.show()
+
+
+    #todo sum of rewards / episodes 
+def plot_rewards(rewards_list, titles_list):
+
+    plt.figure(figsize=(10, 6))
+    # fig, ax = plt.subplots()
+    for time_steps, title in zip(rewards_list, titles_list):
+        episodes = list(range(1, len(time_steps) + 1))
+        plt.plot(episodes, time_steps, label=title)
+        # ax.plot(episodes,time_steps,label=title)
+    plt.xlabel('Episode Number')
+    plt.ylabel('sum of rewards')
+    plt.title('sum of rewards per Episode')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    #todo episodes / number of time steps 
+    # 
+def plot_time_steps(time_steps_list, titles_list):
+
+    plt.figure(figsize=(10, 6))
+    # fig, ax = plt.subplots()
+
+    for time_steps, title in zip(time_steps_list, titles_list):
+        episodes = list(range(1, len(time_steps) + 1))
+        plt.plot(episodes, time_steps, label=title)
+        # plt.scatter(episodes, time_steps, label=title, linewidth=2)
+
+        # ax.plot(episodes,time_steps,label=title)
+
+
+    plt.xlabel('Episode Number')
+    plt.ylabel('Time Steps')
+    plt.title('Time Steps per Episode')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+  
+
+    # todo sum of rewards per episode for different alphas

@@ -25,17 +25,23 @@ def epsilon_greedy_policy2(state,Q1,Q2,epsilon,n_actions=4):
     return action_probs
 
 #todo Sarsa
-def sarsa(grid: Grid,n_episodes = 10000, alpha=0.1,epsilon=0.1,discount=0.95):
+def sarsa(grid: Grid,n_episodes = 10000, alpha=0.1,epsilon=0.1,discount=0.95,eps_decay=0.00005):
     print("starting SARSA \n")
     print("from state: " + str(grid.current_state))
     # policy_prob = [[{"left": 0.25, "right": 0.25, "up": 0.25, "down": 0.25} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # policy = [["right" for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    steps=[]
+    sum_of_rewards = []
 
-    Q = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    Q = [[{"left": 10, "right": 10, "up": 10, "down": 10} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
-
+    
     for i in range(n_episodes):
+        grid.current_state= grid.blue_pos
+
+        if epsilon > 0.01:
+            epsilon -= eps_decay
         if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         terminal = False
@@ -43,6 +49,7 @@ def sarsa(grid: Grid,n_episodes = 10000, alpha=0.1,epsilon=0.1,discount=0.95):
         action_probs = epsilon_greedy_policy(S,Q,epsilon)
         A = random.choices((grid.action_set), (action_probs.tolist()),k=1)[0]
         step_counter=0
+        reward = 0 
         while not terminal: #or replace with steps ?
             step_counter+=1
             # if step_counter%10000 ==0 :
@@ -51,33 +58,40 @@ def sarsa(grid: Grid,n_episodes = 10000, alpha=0.1,epsilon=0.1,discount=0.95):
             #     print(Q[S[0]][S[1]])
 
             S_prime,R,terminal = grid.move(A)
-
+            reward+=R
             action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
             A_prime = random.choices(list(grid.action_set),list(action_probs),k=1)[0]
             Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* Q[S_prime[0]][S_prime[1]][A_prime] - Q[S[0]][S[1]][A])
             S = S_prime
             A = A_prime
-        
-    return Q
+        steps.append(step_counter)
+        sum_of_rewards.append(reward)
+    return Q,steps,sum_of_rewards
     
 
 
 # todo Q Learning
-def Qlearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
+def Qlearning(grid: Grid,n_episodes = 10000, alpha=0.1,epsilon=0.05,discount=0.95,eps_decay=0.00005):
     # policy_prob = [[{"left": 0.25, "right": 0.25, "up": 0.25, "down": 0.25} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # policy = [["right" for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
 
-    Q = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
+    Q = [[{"left": 10, "right": 10, "up": 10, "down": 10} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
+    steps=[]
+    sum_of_rewards = []
 
     for i in range(n_episodes):
+        grid.current_state= grid.blue_pos
+
         terminal = False
         S = grid.current_state
-        if i% 1000 ==0 :
+        if epsilon > 0.01:
+            epsilon -= eps_decay
+        if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         step_counter=0
-
+        reward=0
         while not terminal: #or replace with steps ?
             step_counter+=1
 
@@ -86,22 +100,29 @@ def Qlearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95
             # action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
             # A_prime = random.choice(grid.action_set,p = action_probs)
             S_prime,R,terminal = grid.move(A)
+            reward+=R
             Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* max(Q[S_prime[0]][S_prime[1]].values()) - Q[S[0]][S[1]][A])
             S = S_prime
             # A = A_prime
-        
-    return Q
+        steps.append(step_counter)
+        sum_of_rewards.append(reward)
+    return Q,steps,sum_of_rewards
 
 # todo expected sarsa
-def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
+def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95,eps_decay=0.00005):
     # policy_prob = [[{"left": 0.25, "right": 0.25, "up": 0.25, "down": 0.25} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # policy = [["right" for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
 
     Q = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
-
+    steps=[]
+    sum_of_rewards = []
+    
     for i in range(n_episodes):
+        grid.current_state= grid.blue_pos
+        if epsilon > 0.01:
+            epsilon -= eps_decay
         if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         terminal = False
@@ -109,7 +130,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
         action_probs = epsilon_greedy_policy(S,Q,epsilon)
         A = random.choice(grid.action_set,p = action_probs)
         step_counter=0
-
+        reward = 0 
         while not terminal: #or replace with steps ?
             step_counter+=1
 
@@ -122,26 +143,33 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* expected_target  - Q[S[0]][S[1]][A])
             S = S_prime
             A = A_prime
-        
-    return Q
+            reward+=R
+        steps.append(step_counter)
+        sum_of_rewards.append(reward)
+    return Q,steps,sum_of_rewards
 
 # todo d learning
-def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95):
+def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount=0.95,eps_decay=0.00005):
     # policy_prob = [[{"left": 0.25, "right": 0.25, "up": 0.25, "down": 0.25} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # policy = [["right" for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
 
     Q1 = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     Q2 = [[{"left": 0, "right": 0, "up": 0, "down": 0} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
-    
+    steps=[]
+    sum_of_rewards = []
     # Returns = [[{"left": [], "right": [], "up": [], "down": []} for _ in range(grid.shape[1])] for _ in range(grid.shape[0])]
     # rewards = []
 
     for i in range(n_episodes):
+        grid.current_state= grid.blue_pos
+        if epsilon > 0.01:
+            epsilon -= eps_decay
         if i% 100 ==0 :
             print("elapsed: %"+ str(i/n_episodes *100))  
         terminal = False
         S = grid.current_state
         step_counter= 0
+        reward=0
         while not terminal: #or replace with steps ?
             step_counter+=1
             action_probs = epsilon_greedy_policy2(S,Q1, Q2,epsilon)
@@ -149,6 +177,7 @@ def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             # action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
             # A_prime = random.choice(grid.action_set,p = action_probs)
             S_prime,R,terminal = grid.move(A)
+            reward+=R
             if np.random.binomial(1, 0.5, 1)==0:
                 
                 Q1[S[0]][S[1]][A] = Q1[S[0]][S[1]][A] + alpha*(R + discount* max(Q2[S_prime[0]][S_prime[1]].values()) - Q1[S[0]][S[1]][A])
@@ -157,13 +186,16 @@ def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
 
             S = S_prime
             # A = A_prime
+        steps.append(step_counter)
+        sum_of_rewards.append(reward)
         
-    return Q1,Q2
+    return Q1,Q2,steps,sum_of_rewards
 
 def main():
     parser = argparse.ArgumentParser(description="Simulate multi-armed bandit problem.")
-    parser.add_argument('--episodes', type=int, default=10000, help='number of episodes')
-    parser.add_argument('--epsilon', type=float, default=0.01, help='epsilon')
+    parser.add_argument('--episodes', type=int, default=4000, help='number of episodes')
+    parser.add_argument('--epsilon', type=float, default=0.2, help='epsilon')
+    parser.add_argument('--alpha', type=float, default=0.1, help='epsilon')
 
     parser.add_argument('--gui', action='store_true' )
     parser.add_argument('--tune', action='store_true' )
@@ -171,7 +203,7 @@ def main():
     args = parser.parse_args()
     
     gui=args.gui
-
+    alpha=args.alpha
     tune = args.tune
     epsilon = args.epsilon
     n_episodes = args.episodes
@@ -179,7 +211,7 @@ def main():
 
     ##Sarsa
     grid = Grid()
-    Q_sarsa = sarsa(grid)
+    Q_sarsa,steps_sarsa,rewards_sarsa= sarsa(grid,n_episodes,alpha,epsilon)
     print("finished: final q: ")
     print(Q_sarsa)
     # plot_state_values(Q_sarsa)
@@ -188,7 +220,7 @@ def main():
 
     ## Q learning
     grid = Grid()
-    Q_Qlearning = Qlearning(grid)
+    Q_Qlearning,steps_qlearning,rewards_qlearning = Qlearning(grid,n_episodes,alpha,epsilon)
     print("finished: final q: ")
     print(Q_Qlearning)
     # plot_state_values(Q_sarsa)
@@ -196,6 +228,8 @@ def main():
 
 
     plot_policies_grid(grid,[Q_sarsa,Q_Qlearning],["SARSA","QLEARNING"])
+    plot_time_steps([steps_sarsa,steps_qlearning],["SARSA","QLEARNING"])
+    plot_rewards([rewards_sarsa,rewards_qlearning],["SARSA","QLEARNING"])
 
 
 if __name__=="__main__":
