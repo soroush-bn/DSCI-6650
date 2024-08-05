@@ -221,22 +221,22 @@ def main():
     n_episodes = args.episodes
 
 
-    # ##Sarsa
-    # grid = Grid()
-    # Q_sarsa,steps_sarsa,rewards_sarsa= sarsa(grid,n_episodes,alpha,epsilon)
-    # print("finished Sarsa: final q: ")
-    # print(Q_sarsa)
-    # # plot_state_values(Q_sarsa)
-    # # plot_policy(grid,Q_sarsa)
+    ##Sarsa
+    grid = Grid()
+    Q_sarsa,steps_sarsa,rewards_sarsa= sarsa(grid,n_episodes,alpha,epsilon)
+    print("finished Sarsa: final q: ")
+    print(Q_sarsa)
+    # plot_state_values(Q_sarsa)
+    # plot_policy(grid,Q_sarsa)
 
 
-    # ## Q learning
-    # grid = Grid()
-    # Q_Qlearning,steps_qlearning,rewards_qlearning = Qlearning(grid,n_episodes,alpha,epsilon)
-    # print("finished Q learning: final Q: ")
-    # print(Q_Qlearning)
-    # # plot_state_values(Q_sarsa)
-    # # plot_policy(grid,Q_Qlearning)
+    ## Q learning
+    grid = Grid()
+    Q_Qlearning,steps_qlearning,rewards_qlearning = Qlearning(grid,n_episodes,alpha,epsilon)
+    print("finished Q learning: final Q: ")
+    print(Q_Qlearning)
+    # plot_state_values(Q_sarsa)
+    # plot_policy(grid,Q_Qlearning)
 
         ## Q learning
     grid = Grid()
@@ -250,9 +250,11 @@ def main():
     print("finished expected sarsa: final Q: ")
     print(Q_DQlearning)
 
-    plot_policies_grid(grid,[Q_ExpectedSarsa,Q_DQlearning],["eSARSA","dQLEARNING"])
-    plot_time_steps([steps_ExpectedSarsa,steps_DQlearning],["eSARSA","dQLEARNING"])
-    plot_rewards([rewards_ExpectedSarsa,rewards_DQlearning],["eSARSA","dQLEARNING"])
+
+    plot_policies_grid(grid,[Q_sarsa,Q_Qlearning,Q_ExpectedSarsa,Q_DQlearning],["Sarsa Policy","Q-learning Policy","Expected SARSA Policy","Double Q-learning Policy"])
+    plot_time_steps([steps_sarsa,steps_qlearning,steps_ExpectedSarsa,steps_DQlearning],["steps Sarsa","steps Q-learning","steps Expected Sarsa","steps Double Q-learning"])
+    plot_rewards([rewards_sarsa,rewards_qlearning,rewards_ExpectedSarsa,rewards_DQlearning],["rewards Sarsa","rewards Q-learning","rewards Expected Sarsa","rewards Double Q-learning"])
+
 
 
 
