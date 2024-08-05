@@ -19,7 +19,11 @@ def get_action(state, Q, epsilon, n_actions=4):
 def epsilon_greedy_policy2(state,Q1,Q2,epsilon,n_actions=4):
     action_probs = np.ones(n_actions) * (epsilon / n_actions)
     action_map = {'left': 0, 'right':1,'up':2,'down':3}
-    greedy_action = max(Q1[state[0]][state[1]]+Q2[state[0]][state[1]],key=Q1[state[0]][state[1]].get )
+    dict1=  Q1[state[0]][state[1]]
+    dict2= Q2[state[0]][state[1]]
+    Q = {key: dict1[key] + dict2[key] for key in dict1}
+
+    greedy_action = max(Q,key=Q1[state[0]][state[1]].get )
     greedy_action = action_map[greedy_action]
     action_probs[greedy_action] += (1.0 - epsilon)
     return action_probs
@@ -131,6 +135,8 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
         A = random.choices(grid.action_set,action_probs,k=1)[0]
         step_counter=0
         reward = 0 
+        action_map = {'left': 0, 'right':1,'up':2,'down':3}
+
         while not terminal: #or replace with steps ?
             step_counter+=1
 
@@ -139,7 +145,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             A_prime = random.choices(grid.action_set,action_probs,k=1)[0]
             expected_target = 0 
             for a in grid.action_set:
-                expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[1]][a]
+                expected_target+= action_probs[action_map[a]] * Q[S_prime[0]][S_prime[1]][a]
             Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* expected_target  - Q[S[0]][S[1]][A])
             S = S_prime
             A = A_prime
@@ -188,8 +194,14 @@ def Doublelearning(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             # A = A_prime
         steps.append(step_counter)
         sum_of_rewards.append(reward)
-        
-    return Q1,Q2,steps,sum_of_rewards
+    Q = [
+        [
+            {key: (Q1[i][j][key] + Q2[i][j][key]) / 2 for key in Q1[i][j]}
+            for j in range(len(Q1[i]))
+        ]
+        for i in range(len(Q1))
+    ]
+    return Q,steps,sum_of_rewards
 
 def main():
     parser = argparse.ArgumentParser(description="Simulate multi-armed bandit problem.")
