@@ -151,16 +151,20 @@ def plot_policies_grid(grid,q_values_list, titles_list):
 
     #todo sum of rewards / episodes 
 def plot_rewards(rewards_list, titles_list):
+    stepping_factor = 20
 
     plt.figure(figsize=(10, 6))
-    # fig, ax = plt.subplots()
     for time_steps, title in zip(rewards_list, titles_list):
-        episodes = list(range(1, len(time_steps) + 1))
-        plt.plot(episodes, time_steps, label=title)
-        # ax.plot(episodes,time_steps,label=title)
+        # Average the rewards in chunks of 50
+        reshaped = np.reshape(time_steps[:len(time_steps) - len(time_steps) % stepping_factor], (-1, stepping_factor))
+        averaged_rewards = np.mean(reshaped, axis=1)
+        
+        episodes = list(range(1, len(averaged_rewards) + 1))
+        plt.plot(episodes, averaged_rewards, label=title)
+    
     plt.xlabel('Episode Number')
-    plt.ylabel('sum of rewards')
-    plt.title('sum of rewards per Episode')
+    plt.ylabel('Average Sum of Rewards')
+    plt.title('Average Sum of Rewards per Episode')
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -168,24 +172,21 @@ def plot_rewards(rewards_list, titles_list):
     #todo episodes / number of time steps 
     # 
 def plot_time_steps(time_steps_list, titles_list):
+    stepping_factor = 20
 
     plt.figure(figsize=(10, 6))
-    # fig, ax = plt.subplots()
-
     for time_steps, title in zip(time_steps_list, titles_list):
-        episodes = list(range(1, len(time_steps) + 1))
-        plt.plot(episodes, time_steps, label=title)
-        # plt.scatter(episodes, time_steps, label=title, linewidth=2)
-
-        # ax.plot(episodes,time_steps,label=title)
-
-
+        # Average the time steps in chunks of 50
+        reshaped = np.reshape(time_steps[:len(time_steps) - len(time_steps) % stepping_factor], (-1, stepping_factor))
+        averaged_time_steps = np.mean(reshaped, axis=1)
+        
+        episodes = list(range(1, len(averaged_time_steps) + 1))
+        plt.plot(episodes, averaged_time_steps, label=title)
+    
     plt.xlabel('Episode Number')
-    plt.ylabel('Time Steps')
-    plt.title('Time Steps per Episode')
+    plt.ylabel('Average Time Steps')
+    plt.title('Average Time Steps per Episode')
     plt.legend()
     plt.grid(True)
     plt.show()
-  
-
     # todo sum of rewards per episode for different alphas
