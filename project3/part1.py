@@ -139,7 +139,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
             A_prime = random.choices(grid.action_set,action_probs,k=1)[0]
             expected_target = 0 
             for a in grid.action_set:
-                expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[S[1]]][a]
+                expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[1]][a]
             Q[S[0]][S[1]][A] = Q[S[0]][S[1]][A] + alpha*(R + discount* expected_target  - Q[S[0]][S[1]][A])
             S = S_prime
             A = A_prime
