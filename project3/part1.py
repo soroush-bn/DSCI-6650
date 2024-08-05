@@ -136,7 +136,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
 
             S_prime,R,terminal = grid.move(A)
             action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
-            A_prime = random.choices(grid.action_set,action_probs,K=1)[0]
+            A_prime = random.choices(grid.action_set,action_probs,k=1)[0]
             expected_target = 0 
             for a in grid.action_set:
                 expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[S[1]]][a]
