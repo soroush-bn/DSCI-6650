@@ -128,7 +128,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
         terminal = False
         S = grid.current_state
         action_probs = epsilon_greedy_policy(S,Q,epsilon)
-        A = random.choice(grid.action_set,p = action_probs)
+        A = random.choices(grid.action_set,action_probs,k=1)[0]
         step_counter=0
         reward = 0 
         while not terminal: #or replace with steps ?
@@ -136,7 +136,7 @@ def expected_sarsa(grid: Grid,n_episodes = 1000, alpha=0.1,epsilon=0.05,discount
 
             S_prime,R,terminal = grid.move(A)
             action_probs = epsilon_greedy_policy(S_prime,Q,epsilon)
-            A_prime = random.choiceS(grid.action_set,action_probs,K=1)[0]
+            A_prime = random.choices(grid.action_set,action_probs,K=1)[0]
             expected_target = 0 
             for a in grid.action_set:
                 expected_target+= action_probs[a] * Q[S_prime[0]][S_prime[S[1]]][a]
@@ -209,27 +209,40 @@ def main():
     n_episodes = args.episodes
 
 
-    ##Sarsa
+    # ##Sarsa
+    # grid = Grid()
+    # Q_sarsa,steps_sarsa,rewards_sarsa= sarsa(grid,n_episodes,alpha,epsilon)
+    # print("finished Sarsa: final q: ")
+    # print(Q_sarsa)
+    # # plot_state_values(Q_sarsa)
+    # # plot_policy(grid,Q_sarsa)
+
+
+    # ## Q learning
+    # grid = Grid()
+    # Q_Qlearning,steps_qlearning,rewards_qlearning = Qlearning(grid,n_episodes,alpha,epsilon)
+    # print("finished Q learning: final Q: ")
+    # print(Q_Qlearning)
+    # # plot_state_values(Q_sarsa)
+    # # plot_policy(grid,Q_Qlearning)
+
+        ## Q learning
     grid = Grid()
-    Q_sarsa,steps_sarsa,rewards_sarsa= sarsa(grid,n_episodes,alpha,epsilon)
-    print("finished: final q: ")
-    print(Q_sarsa)
-    # plot_state_values(Q_sarsa)
-    # plot_policy(grid,Q_sarsa)
+    Q_ExpectedSarsa,steps_ExpectedSarsa,rewards_ExpectedSarsa = expected_sarsa(grid,n_episodes,alpha,epsilon)
+    print("finished expected sarsa: final Q: ")
+    print(Q_ExpectedSarsa)
 
-
-    ## Q learning
+    ## qqlearning
     grid = Grid()
-    Q_Qlearning,steps_qlearning,rewards_qlearning = Qlearning(grid,n_episodes,alpha,epsilon)
-    print("finished: final q: ")
-    print(Q_Qlearning)
-    # plot_state_values(Q_sarsa)
-    # plot_policy(grid,Q_Qlearning)
+    Q_DQlearning,steps_DQlearning,rewards_DQlearning = Doublelearning(grid,n_episodes,alpha,epsilon)
+    print("finished expected sarsa: final Q: ")
+    print(Q_DQlearning)
+
+    plot_policies_grid(grid,[Q_ExpectedSarsa,Q_DQlearning],["eSARSA","dQLEARNING"])
+    plot_time_steps([steps_ExpectedSarsa,steps_DQlearning],["eSARSA","dQLEARNING"])
+    plot_rewards([rewards_ExpectedSarsa,rewards_DQlearning],["eSARSA","dQLEARNING"])
 
 
-    plot_policies_grid(grid,[Q_sarsa,Q_Qlearning],["SARSA","QLEARNING"])
-    plot_time_steps([steps_sarsa,steps_qlearning],["SARSA","QLEARNING"])
-    plot_rewards([rewards_sarsa,rewards_qlearning],["SARSA","QLEARNING"])
 
 
 if __name__=="__main__":
