@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import random
 import seaborn as sns
 
-
+import matplotlib.colors as mcolors
 
 
 def get_state_values(action_values):
@@ -162,7 +162,7 @@ def plot_rewards(rewards_list, titles_list):
         episodes = list(range(1, len(averaged_rewards) + 1))
         plt.plot(episodes, averaged_rewards, label=title)
     
-    plt.xlabel('Episode Number')
+    plt.xlabel('Episode Number*'+str(stepping_factor))
     plt.ylabel('Average Sum of Rewards')
     plt.title('Average Sum of Rewards per Episode')
     plt.legend()
@@ -183,10 +183,42 @@ def plot_time_steps(time_steps_list, titles_list):
         episodes = list(range(1, len(averaged_time_steps) + 1))
         plt.plot(episodes, averaged_time_steps, label=title)
     
-    plt.xlabel('Episode Number')
+    plt.xlabel('Episode Number*'+str(stepping_factor))
     plt.ylabel('Average Time Steps')
     plt.title('Average Time Steps per Episode')
     plt.legend()
     plt.grid(True)
     plt.show()
     # todo sum of rewards per episode for different alphas
+
+
+
+def plot_values(values,titles ):
+    fig, axs = plt.subplots(1, len(values), figsize=(16, 6))
+    for i in range(len(values)):
+        sns.heatmap(values[i], annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[i])
+        axs[i].set_title(titles[i])
+        axs[i].set_xlabel('Column')
+        axs[i].set_ylabel('Row')
+    plt.show()
+
+def plot_values_per_state(values,titles):
+    plt.figure(figsize=(10, 6))
+    for i in range(len(values)):
+        # sns.heatmap(values[i], annot=True, fmt=".2f", cmap='viridis', cbar=True, ax=axs[i])
+        v= values[i].flatten()
+        # shifted  = np.roll(v,-6)
+        state = list(np.arange(1,len(v)+1))
+        plt.plot(state,v,label = titles[i])
+
+    # y= list(np.arange(-1,1-1/49,step=2/49))
+    
+    # plt.plot(state, y, label='true values', linestyle='--')
+    plt.xlabel('state')
+    plt.ylabel('value')
+    plt.title("value per states")
+
+    plt.legend()
+    plt.show()
+
+
