@@ -19,7 +19,10 @@ class Grid:
         self.lower_left = (6,0) # -1
 
         # self.color_map = {self.blue_pos: "blue", self.green_pos: "green" ,self.yellow_pos:"yellow", self.red_pos:"red"}
-    
+    def reset(self):
+        self.current_state = (3, 3)
+        return self.current_state
+        
     def move(self,action):
         # reward = self.check_special() #this step reward or total reward ???
         # termination = self.current_state == self.upper_right or  self.current_state == self.lower_left
