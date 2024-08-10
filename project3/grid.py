@@ -15,11 +15,18 @@ class Grid:
         self.blue_pos = (4,0)
         self.red_states = [(2,0),(2,1),(2,3),(2,4)]
         self.terminal_states= [(0,0),(0,4)]
+        self.timer = 0
         # self.color_map = {self.blue_pos: "blue", self.green_pos: "green" ,self.yellow_pos:"yellow", self.red_pos:"red"}
+    def reset(self):
+        self.current_state = (4, 0)
+        self.timer= 0
+
+        return self.current_state
     
     def move(self,action):
+        # self.timer +=1 
         reward = self.check_special() #this step reward or total reward ???
-        termination = self.current_state in self.terminal_states 
+        termination = (self.current_state in self.terminal_states) 
 
         if reward!=0 :
             return self.current_state, reward, termination
