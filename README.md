@@ -72,3 +72,50 @@ Part two, Question 3:
 ```bash
 python3 part2.py -q3 --gui  
 ```
+
+
+
+## Project Three:
+Reproducing Results:
+
+
+```bash
+cd /DSCI-6650/project3/
+```
+
+
+Part one:
+experiment 1:
+```bash
+python3 part1.py --episodes 500 --alpha 0.1 --epsilon 0.2
+```
+experiment 2:
+```bash
+python3 part1.py --episodes 1000 --alpha 0.1 --epsilon 0.2
+```
+experiment 3:
+```bash
+python3 part1.py --episodes 5000 --alpha 0.1 --epsilon 0.2
+```
+experiment 4:
+```bash
+python3 part1.py --episodes 10000 --alpha 0.1 --epsilon 0.2
+```
+
+Part two:
+
+```bash
+python3 part1.py --episodes 10000 --alpha 0.1 
+```
+experiment 2:
+```bash
+python3 part1.py --episodes 10000 --alpha 0.2 
+```
+experiment 3:
+```bash
+python3 part1.py --episodes 10000 --alpha 0.3 
+```
+experiment 4:
+```bash
+python3 part1.py --episodes 10000 --alpha 0.5 
+```
