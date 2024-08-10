@@ -32,7 +32,7 @@ def get_policy(Q):
             state = Q[row][col]
             best_action = max(state, key=state.get)
             policy_grid[row, col] = best_action
-    policy_grid
+    return policy_grid
 
 
 def plot_policy(grid,action_values):
