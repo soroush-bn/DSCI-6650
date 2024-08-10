@@ -102,6 +102,17 @@ experiment 4:
 python3 part1.py --episodes 10000 --alpha 0.1 --epsilon 0.2
 ```
 
+Parameter Tuning: 
+```bash
+python3 part1.py --episodes 1000  --epsilon 0.1 --tune
+```
+```bash
+python3 part1.py --episodes 1000  --epsilon 0.2 --tune
+```
+```bash
+python3 part1.py --episodes 5000  --epsilon 0.2 --tune
+```
+
 Part two:
 
 ```bash
